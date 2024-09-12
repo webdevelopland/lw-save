@@ -1,0 +1,18 @@
+.dialog {
+  padding: 10px;
+  font-size: 14px;
+  >.message {
+    margin-bottom: 10px;
+    text-align: center;
+    max-width: 400px;
+  }
+  >.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    >button {
+      width: 150px;
+      height: 27px;
+    }
+  }
+}

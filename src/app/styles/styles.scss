@@ -1,0 +1,18 @@
+@import './variables';
+@import './material';
+@import './elements/elements';
+
+html {
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  height: 100%;
+  body {
+    margin: 0;
+    font-family: $default-font;
+    background: $color-bg;
+    color: $color-font;
+    height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+}

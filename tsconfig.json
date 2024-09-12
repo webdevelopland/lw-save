@@ -1,0 +1,23 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2022",
+    "module": "es2022",
+    "lib": [
+      "es2022",
+      "dom"
+    ],
+    "paths": {
+      "@/*": ["src/app/*"],
+      "src/*": ["src/*"]
+    }
+  }
+}

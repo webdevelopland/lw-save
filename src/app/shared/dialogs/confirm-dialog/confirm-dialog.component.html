@@ -1,0 +1,16 @@
+<div class="dialog">
+  <div class="message ellipsis">
+    {{ dialogData.message }}
+  </div>
+  <div class="buttons">
+    <button
+      class="cancel-button"
+      (click)="close()"
+    >Cancel</button>
+    <button
+      class="ok-button"
+      (click)="ok()"
+      focus=true
+    >OK</button>
+  </div>
+</div>
