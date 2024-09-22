@@ -40,12 +40,14 @@ export class CombineService {
     Object.values(st1.nidMap).forEach(nid => this.addNid(nid));
     Object.values(st2.nidMap).forEach(nid => this.addNid(nid));
     // Components
+    Object.values(st1.compMap).forEach(comp => this.createAddressMap(comp, this.adrMap1));
+    Object.values(st2.compMap).forEach(comp => this.createAddressMap(comp, this.adrMap2));
     Object.values(st1.compMap)
       .sort((a, b) => a.parent - b.parent)
-      .forEach(comp => this.createComponent(comp, this.adrMap1, this.wireMap1));
+      .forEach(comp => this.createComponent(comp, this.adrMap1, this.wireMap1, -30000));
     Object.values(st2.compMap)
       .sort((a, b) => a.parent - b.parent)
-      .forEach(comp => this.createComponent(comp, this.adrMap2, this.wireMap2));
+      .forEach(comp => this.createComponent(comp, this.adrMap2, this.wireMap2, 30000));
     // Wires
     st1.wireList.forEach(wire => this.createWire(wire, this.wireMap1, this.adrMap1));
     st2.wireList.forEach(wire => this.createWire(wire, this.wireMap2, this.adrMap2));
@@ -86,14 +88,17 @@ export class CombineService {
     }
   }
 
-  createComponent(comp: Component, aMap: AdrMap, wMap: WireMap): void {
-    const newComp = new Component(this.address);
+  createAddressMap(comp: Component, aMap: AdrMap): void {
     aMap[comp.address] = this.address;
     this.address++;
+  }
+
+  createComponent(comp: Component, aMap: AdrMap, wMap: WireMap, gap = 0): void {
+    const newAddress = aMap[comp.address];
+    const newComp = new Component(newAddress);
     if (comp.parent !== 0) {
-      comp.parent = aMap[comp.parent];
+      newComp.parent = aMap[comp.parent];
     }
-    newComp.parent = comp.parent;
     comp.inputs.forEach(input => {
       this.updateWireMap(input, wMap);
       newComp.inputs.push(wMap[input]);
@@ -105,6 +110,10 @@ export class CombineService {
     newComp.x = comp.x;
     newComp.y = comp.y;
     newComp.z = comp.z;
+    if (comp.parent === 0) {
+      newComp.x += gap;
+      newComp.y += gap;
+    }
     newComp.rotation = comp.rotation;
     newComp.customData = comp.customData;
     newComp.name = comp.name;

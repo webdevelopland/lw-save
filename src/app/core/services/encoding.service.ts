@@ -28,6 +28,15 @@ export class EncodingService {
     );
   }
 
+  int32ToUint8Array(int32: number): Uint8Array {
+    return Uint8Array.of(
+      (int32 >>> 24) & 0xFF,
+      (int32 >>> 16) & 0xFF,
+      (int32 >>> 8) & 0xFF,
+      int32 & 0xFF,
+    );
+  }
+
   uint8ArrayToUint32(bytes: Uint8Array): number {
     let n: number = 0;
     for (const byte of bytes.values()) {
@@ -36,7 +45,7 @@ export class EncodingService {
     return n >>> 0;
   }
 
-  uint8ArrayToUint32Signed(bytes: Uint8Array): number {
+  uint8ArrayToInt32(bytes: Uint8Array): number {
     let n: number = 0;
     for (const byte of bytes.values()) {
       n = (n << 8) | byte;
@@ -67,5 +76,19 @@ export class EncodingService {
     bytes.reverse();
     // Join the bytes back into a single string
     return bytes.join('');
+  }
+
+  mergeUint8Arrays(...args): Uint8Array {
+    let size: number = 0;
+    for (const binary of args) {
+      size += binary.length;
+    }
+    const uint8Array = new Uint8Array(size);
+    size = 0;
+    for (const binary of args) {
+      uint8Array.set(binary, size);
+      size += binary.length;
+    }
+    return uint8Array;
   }
 }

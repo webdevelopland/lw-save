@@ -2,20 +2,19 @@ import { Injectable } from '@angular/core';
 import { saveAs } from 'file-saver';
 
 import { State, Peg } from '@/core/type';
-import { mergeUint8Arrays } from '@/core/functions';
 import { StateService } from './state.service';
 import { EncodingService } from './encoding.service';
-import { LoadingService } from './loading.service';
 
 @Injectable()
 export class BuildService {
   state: State;
   output: Uint8Array;
+  address: number; // Address counter
+  buildMap: { [address: number]: boolean } = { 0: true };
 
   constructor(
     private stateService: StateService,
     private encodingService: EncodingService,
-    private ls: LoadingService,
   ) {}
 
   build(index: number): void {
@@ -55,34 +54,60 @@ export class BuildService {
   }
 
   buildComponents(): void {
-    const comps = Object.values(this.state.compMap);
-    comps.forEach(comp => {
-      this.push(this.getInt(comp.address));
-      this.push(this.getInt(comp.parent));
-      this.push(this.getBytes(comp.nid));
-      this.push(this.getInt(comp.x));
-      this.push(this.getInt(comp.z));
-      this.push(this.getInt(comp.y));
-      this.push(comp.rotation);
+    this.address = 1;
+    this.buildComponent(this.address);
+  }
 
-      this.push(this.getInt(comp.inputs.length));
-      comp.inputs.forEach(input => {
-        this.push(this.getBytes(input));
-      });
+  buildComponent(address: number, isParent: boolean = false): void {
+    const comp = this.state.compMap[address];
+    if (!comp) {
+      // Not found, probably we built all of them
+      this.buildWires();
+      return;
+    }
 
-      this.push(this.getInt(comp.outputs.length));
-      comp.outputs.forEach(output => {
-        this.push(this.getBytes(output));
-      });
+    if (!this.buildMap[comp.parent]) {
+      // We have to add component only when parent already added
+      this.buildComponent(comp.parent, true);
+    }
+    if (this.buildMap[comp.address]) {
+      // Already added. Probably as parent of other component. Skip it.
+      this.address++;
+      this.buildComponent(this.address);
+      return;
+    }
+    this.push(this.getUint(comp.address));
+    this.push(this.getUint(comp.parent));
+    this.push(this.getBytes(comp.nid));
+    this.push(this.getInt(comp.x));
+    this.push(this.getInt(comp.z));
+    this.push(this.getInt(comp.y));
+    this.push(comp.rotation);
 
-      if (comp.customData && comp.customData.length > 0) {
-        this.push(this.getInt(comp.customData.length));
-        this.push(comp.customData);
-      } else {
-        this.push(this.getInt(0));
-      }
+    this.push(this.getInt(comp.inputs.length));
+    comp.inputs.forEach(input => {
+      this.push(this.getBytes(input));
     });
-    this.buildWires();
+
+    this.push(this.getInt(comp.outputs.length));
+    comp.outputs.forEach(output => {
+      this.push(this.getBytes(output));
+    });
+
+    if (comp.customData && comp.customData.length > 0) {
+      this.push(this.getInt(comp.customData.length));
+      this.push(comp.customData);
+    } else if (comp.customData === null) {
+      this.push(this.getInt(-1));
+    } else {
+      this.push(this.getInt(0));
+    }
+    this.buildMap[address] = true;
+    if (!isParent) {
+      // Build next
+      this.address++;
+      this.buildComponent(this.address);
+    }
   }
 
   buildComponentIds(): void {
@@ -108,11 +133,15 @@ export class BuildService {
   }
 
   push(binary: Uint8Array): void {
-    this.output = mergeUint8Arrays(this.output, binary);
+    this.output = this.encodingService.mergeUint8Arrays(this.output, binary);
+  }
+
+  getUint(int: number): Uint8Array {
+    return this.encodingService.uint32ToUint8Array(int).reverse();
   }
 
   getInt(int: number): Uint8Array {
-    return this.encodingService.uint32ToUint8Array(int).reverse();
+    return this.encodingService.int32ToUint8Array(int).reverse();
   }
 
   getText(str: string): Uint8Array {

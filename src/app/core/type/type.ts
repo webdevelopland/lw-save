@@ -44,7 +44,7 @@ export class State {
 export class Component {
   nid: string;
   address: number;
-  parent: number;
+  parent: number = 0;
   name: string;
   x: number;
   y: number;

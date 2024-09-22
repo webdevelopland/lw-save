@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { Component, Peg, Wire, State } from '@/core/type';
 import { EncodingService } from './encoding.service';
 import { StateService } from './state.service';
-import { LoadingService } from './loading.service';
 
 @Injectable()
 export class ParseService {
@@ -12,7 +11,6 @@ export class ParseService {
   constructor(
     private stateService: StateService,
     private encodingService: EncodingService,
-    private ls: LoadingService,
   ) {}
 
   parse(binary: Uint8Array): void {
@@ -76,6 +74,8 @@ export class ParseService {
       const customDataLen = this.readInt();
       if (customDataLen > 0) {
         comp.customData = this.readBytes(customDataLen);
+      } else if (customDataLen === -1) {
+        comp.customData = null;
       }
     }
     this.parseWires();
@@ -113,7 +113,7 @@ export class ParseService {
   }
 
   readInt(): number {
-    return this.encodingService.uint8ArrayToUint32Signed(this.readBytes(4).reverse());
+    return this.encodingService.uint8ArrayToInt32(this.readBytes(4).reverse());
   }
 
   readAddress(): number {
