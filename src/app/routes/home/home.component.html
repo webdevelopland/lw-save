@@ -1,3 +1,18 @@
 <div class="page">
-  LW
+  <div class="flex" *ngIf="!loadingService.isLoading">
+    <div class="file" *ngIf="!isLoaded">
+      <label for="file-upload">
+        Import Save Files
+      </label>
+      <input
+        id="file-upload"
+        type="file"
+        multiple
+        (change)="importFiles($event.target.files)"
+      />
+    </div>
+    <div class="msg" *ngIf="isLoaded">
+      {{ msg }}
+    </div>
+  </div>
 </div>

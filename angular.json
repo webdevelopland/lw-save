@@ -39,7 +39,8 @@
             },
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "rndmjs"
+              "rndmjs",
+              "file-saver"
             ]
           },
           "configurations": {
